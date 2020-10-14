@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, ToastAndroid, ActivityIndicator } from 'react-native';
+import { View, Text, ToastAndroid, ActivityIndicator, Keyboard } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
 import Home from '../example/Home';
@@ -50,6 +50,7 @@ class MainNavigator extends Component {
     authContext = () => ({
         login: async ({ user, password }) => {
             try {
+                Keyboard.dismiss()
                 const loginData = await api.login({ user, password })
                 if (loginData.status === 'success') {
                     this.setState({
@@ -75,6 +76,7 @@ class MainNavigator extends Component {
         },
         register: async data => {
             try {
+                Keyboard.dismiss()
                 const registerData = await api.post('users.create', data)
                 alert('Register Success')
                 RootNavigation.navigate('LoginScreen')

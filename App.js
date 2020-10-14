@@ -4,10 +4,22 @@ import { NavigationContainer } from '@react-navigation/native';
 import MainNavigator from './src/routes/MainNavigator';
 import { navigationRef } from './src/routes/RootNavigation';
 import WS from './src/api/ws';
+import { SafeAreaView } from 'react-native';
 
 export default function App() {
   useEffect(() => {
     WS.init()
+    WS.ws.addEventListener('message', (event) => {
+      console.log('data message', event)
+      const message = JSON.parse(event.data)
+      if (message.msg === 'ping') {
+        const pongMessage = {
+          msg: 'pong'
+        }
+        WS.sendMessage(JSON.stringify(pongMessage))
+      }
+    })
+
     WS.ws.addEventListener('open', () => {
       console.log('connected server')
       const data = {
@@ -20,8 +32,10 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <MainNavigator />
-    </NavigationContainer>
+    <SafeAreaView style={{ flex: 1 }}>
+      <NavigationContainer ref={navigationRef}>
+        <MainNavigator />
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }

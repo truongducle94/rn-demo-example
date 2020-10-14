@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import React, { Component } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import api from '../../api';
+import WS from '../../api/ws';
 import RootNavigation from '../../routes/RootNavigation';
 
 class ListChatScreen extends Component {
@@ -11,6 +12,7 @@ class ListChatScreen extends Component {
     }
 
     componentDidMount() {
+        console.log(WS.ws.readyState, 'STATE LIST CHAT')
         api.fetch('users.list')
             .then(async (res) => {
                 const myInfo = await AsyncStorage.getItem('user')
