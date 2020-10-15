@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, ToastAndroid, ActivityIndicator, Keyboard } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
 import Home from '../example/Home';
+import RocketChat from '../example/RocketChat';
 import ChatScreen from '../example/RocketChat/ChatScreen';
 import ListChatScreen from '../example/RocketChat/ListChatScreen';
 import RegisterScreen from '../example/Authen/RegisterScreen';
@@ -11,12 +12,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 import api from '../api';
 import RootNavigation from './RootNavigation';
 import Container from '../components/Container';
-import WS from '../api/ws';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export const AuthContext = React.createContext()
-export let userInfo = null
 
 const MainDrawer = () => {
     return (
@@ -34,30 +33,18 @@ class MainNavigator extends Component {
     }
 
     _getUserInfo = async () => {
-        try {
-            const user = await AsyncStorage.getItem('user')
-            console.log(user, 'useruser')
-            if (user) {
-                const userData = JSON.parse(user)
-                userInfo = userData
-
-                api.setDefaultHeader(userData)
-                this.setState({
-                    isLoading: false,
-                    isLogin: true
-                })
-            } else {
-                this.setState({
-                    isLoading: false,
-                })
-            }
-        } catch (error) {
+        const user = await AsyncStorage.getItem('user')
+        if (user) {
+            api.setDefaultHeader(JSON.parse(user))
+            this.setState({
+                isLoading: false,
+                isLogin: true
+            })
+        } else {
             this.setState({
                 isLoading: false,
             })
-            console.log(error, 'error')
         }
-        
     }
 
     authContext = () => ({
@@ -66,17 +53,6 @@ class MainNavigator extends Component {
                 Keyboard.dismiss()
                 const loginData = await api.login({ user, password })
                 if (loginData.status === 'success') {
-                    userInfo = loginData.data
-                    const subLogin = {
-                        msg: "method",
-                        method: "login",
-                        id: "42",
-                        params: [
-                            { "resume": loginData.data.authToken }
-                        ]
-                    }
-
-                    WS.sendMessage(JSON.stringify(subLogin))
                     this.setState({
                         isLogin: true
                     })
@@ -93,8 +69,6 @@ class MainNavigator extends Component {
             if (logoutResponse.status === 'success') {
                 this.setState({
                     isLogin: false
-                }, () => {
-                    userInfo = null
                 })
             } else {
                 alert('Logout failure')

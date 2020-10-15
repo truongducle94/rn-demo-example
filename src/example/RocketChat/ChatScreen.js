@@ -1,122 +1,57 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import WS from '../../api/ws';
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import images from '../../assets/images'
 import RootNavigation from '../../routes/RootNavigation';
 import api from '../../api';
-import { userInfo } from '../../routes/MainNavigator';
-import MessageChatUI from './components/MessageChatUI';
 
 class ChatScreen extends Component {
     state = {
         user: this.props.route.params?.user,
-        newMessage: '',
-        roomInfo: null,
-        messageData: []
+        message: '',
+        roomInfo: null
     }
-    _subId = null;
 
     _randomId = () => {
         return '_' + Math.random().toString(36).substr(2, 9);
     }
     _onChangeText = (text) => {
-        this._onLogEventTyping(!!text)
         this.setState({
-            newMessage: text
+            message: text
         })
     }
     _sendMessage = async () => {
+        const { message, roomInfo, user } = this.state
+        const msgData = {
+            _id: this._randomId(),
+            rid: roomInfo._id,
+            msg: message
+        }
+        // const msg = {
+        //     msg: "method",
+        //     method: "sendMessage",
+        //     id: "42",
+        //     params: [
+        //         {
+        //             _id: roomInfo._id,
+        //             rid: roomInfo._id,
+        //             msg: message
+        //         }
+        //     ]
+        // }
+        console.log(JSON.stringify(msgData), 'msgData')
+        // WS.sendMessage(JSON.stringify(msg))
         try {
-            const { newMessage, roomInfo } = this.state
-            const msgData = {
-                _id: this._randomId(),
-                rid: roomInfo._id,
-                msg: newMessage,
-            }
-
-            console.log(JSON.stringify(msgData), 'msgData')
-            await api.post('chat.sendMessage', { message: msgData })
-            this.setState({
-                newMessage: '',
-            })
+            const response = await api.post('chat.sendMessage', { message: msgData })
+            console.log(response, 'response')
         } catch (error) {
             console.log(error, 'error')
         }
     }
 
-    _loadMsgData = () => {
-        const { roomInfo } = this.state
-        api.fetch('im.history', {
-            roomId: roomInfo._id
-        })
-            .then(res => {
-                if (res.success) {
-                    this.setState({
-                        messageData: res.messages
-                    })
-                }
-            })
-            .catch(err => {
-                console.log(err, 'get msg err')
-            })
-    }
-
-    _subscribeRoom = () => {
-        try {
-            this._loadMsgData()
-            this._listenNewMessageComing()
-            const { roomInfo, user } = this.state
-            this._subId = `${this._randomId()}-${this._randomId()}`
-
-            const subRoomNotify = {
-                msg: "sub",
-                id: this._subId,
-                name: "stream-room-messages",
-                params: [
-                    roomInfo._id,
-                    true
-                ]
-            }
-            WS.ws.send(JSON.stringify(subRoomNotify))
-        } catch (error) {
-            console.log(error, 'eroroerere')
-        }
-    }
-
-    _listenNewMessageComing = () => {
-        WS.onMessage((event) => {
-            const msgData = JSON.parse(event.data)
-            if (msgData.msg === 'changed') {
-                console.log(msgData, 'msgData')
-                const newMsg = msgData.fields.args
-                this.setState(prev => {
-                    return {
-                        messageData: [...newMsg, ...prev.messageData]
-                    }
-                })
-            }
-        })
-    }
-
-    _onLogEventTyping = (flag) => {
-        const { roomInfo } = this.state
-        const msgNotifyRoom = {
-            msg: "method",
-            method: "stream-notify-room",
-            id: "42",
-            params: [
-                `${roomInfo._id}/typing`,
-                userInfo?.me.username,
-                flag
-            ]
-        }
-
-        WS.sendMessage(JSON.stringify(msgNotifyRoom))
-    }
-
     render() {
-        const { newMessage, user, messageData } = this.state
+        const { message, user } = this.state
         return (
             <View style={{
                 flex: 1
@@ -150,11 +85,11 @@ class ChatScreen extends Component {
                     </View>
                     <View style={{ width: 18, height: 18 }} />
                 </View>
-                {messageData.length ? (<MessageChatUI data={messageData} />) : (
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                        <ActivityIndicator />
-                    </View>
-                )}
+                <View style={{
+                    flex: 1
+                }}>
+
+                </View>
                 <View style={{
                     width: '100%',
                     padding: 12,
@@ -165,16 +100,14 @@ class ChatScreen extends Component {
                     <TextInput
                         placeholder='Type a message'
                         onChangeText={this._onChangeText}
-                        value={newMessage}
+                        value={message}
                         style={{
                             flex: 1,
-                            padding: 8,
+                            padding: 5,
                             alignItems: 'stretch',
                             borderRadius: 6,
                             borderWidth: 0.5
                         }}
-                        autoCorrect={false}
-                        onSubmitEditing={this._sendMessage}
                     />
                     <TouchableOpacity
                         style={{
@@ -190,6 +123,7 @@ class ChatScreen extends Component {
     }
 
     componentDidMount() {
+        console.log(WS.ws.readyState, 'STATE')
         const { user } = this.state
         api.post('im.create', {
             username: user.username
@@ -197,11 +131,20 @@ class ChatScreen extends Component {
             .then(res => {
                 this.setState({
                     roomInfo: res.room
-                }, this._subscribeRoom)
+                })
             })
             .catch(err => {
                 console.log(err, 'ABCCCCC')
             })
+        // console.log(user, 'USER HERE')
+        // const directMsg = {
+        //     msg: "method",
+        //     method: "createDirectMessage",
+        //     id: "42",
+        //     params: [{ username: user.username }]
+        // }
+        // console.log(JSON.stringify(directMsg), 'directMsg')
+        // WS.sendMessage(JSON.stringify(directMsg))
     }
 }
 

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import WS from '../../api/ws';
 import ButtonLogout from '../RocketChat/components/ButtonLogout';
 
 class Home extends Component {
@@ -20,7 +21,11 @@ class Home extends Component {
                 <ButtonLogout />
             </View>
         );
-    }    
+    }
+
+    componentDidMount() {
+        console.log(WS.ws.readyState, 'SDADS')
+    }
 }
 
 export default Home;

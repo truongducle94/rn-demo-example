@@ -12,6 +12,7 @@ class ListChatScreen extends Component {
     }
 
     componentDidMount() {
+        console.log(WS.ws.readyState, 'STATE LIST CHAT')
         api.fetch('users.list')
             .then(async (res) => {
                 const myInfo = await AsyncStorage.getItem('user')
@@ -57,7 +58,7 @@ class ListChatScreen extends Component {
                                 justifyContent: 'center',
                                 marginRight: 16
                             }}>
-                                <Text>{item.name?.substr(0, 2)}</Text>
+                                <Text>{item.name.substr(0, 2)}</Text>
                             </View>
                             <Text>{item.name}</Text>
                         </TouchableOpacity>
