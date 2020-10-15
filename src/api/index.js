@@ -4,7 +4,8 @@ const { default: Axios } = require("axios");
 const { default: server } = require("./server");
 
 const rocket = Axios.create({
-    baseURL: server.BASE_URL,
+    // baseURL: server.BASE_URL,
+    baseURL: server.BASE_URL_UAT,
     timeout: 1000 * 10,
     headers: {
         'Content-Type': 'application/json;charset=UTF-8',
@@ -22,6 +23,7 @@ class ApiClient {
                 params
             })
                 .then(res => {
+                    console.log(res.data, 'FETCH DATA')
                     resolve(res.data)
                 })
                 .catch(err => {
@@ -49,9 +51,7 @@ class ApiClient {
             this.post('login', data)
                 .then(response => {
                     console.log(response)
-                    const userId = response.data.userId
-                    const authToken = response.data.authToken
-                    const userData = { userId, authToken }
+                    const userData = response.data
                     AsyncStorage.setItem('user', JSON.stringify(userData))
                     this.setDefaultHeader(userData)
                     resolve(response)
