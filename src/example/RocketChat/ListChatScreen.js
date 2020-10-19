@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import React, { Component } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import api from '../../api';
+import WS from '../../api/ws';
 import RootNavigation from '../../routes/RootNavigation';
 
 class ListChatScreen extends Component {
@@ -56,7 +57,7 @@ class ListChatScreen extends Component {
                                 justifyContent: 'center',
                                 marginRight: 16
                             }}>
-                                <Text>{item.name.substr(0, 2)}</Text>
+                                <Text>{item.name?.substr(0, 2)}</Text>
                             </View>
                             <Text>{item.name}</Text>
                         </TouchableOpacity>

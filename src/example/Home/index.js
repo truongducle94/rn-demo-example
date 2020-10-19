@@ -20,7 +20,7 @@ class Home extends Component {
                 <ButtonLogout />
             </View>
         );
-    }
+    }    
 }
 
 export default Home;
